@@ -11,10 +11,15 @@ export default function Navbar({ onMenuClick }) {
   };
 
   return (
-    <div className="w-full bg-white border-b h-16 flex items-center justify-between px-4 sm:px-6">
-
+    <div className="
+      relative z-40
+      w-full bg-white border-b h-16
+      flex items-center justify-between
+      px-4 sm:px-6
+    ">
+      {/* ☰ HAMBURGER — MOBILE */}
       <button
-        className="md:hidden"
+        className="md:hidden pointer-events-auto"
         onClick={onMenuClick}
       >
         <Menu size={24} />
@@ -29,3 +34,4 @@ export default function Navbar({ onMenuClick }) {
     </div>
   );
 }
+

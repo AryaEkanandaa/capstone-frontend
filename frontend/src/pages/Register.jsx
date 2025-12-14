@@ -32,7 +32,6 @@ export default function Register() {
             if (json.error) {
                 setError(json.error || "Register gagal. Coba lagi.");
             } else {
-                alert("Register berhasil! Silakan cek email untuk verifikasi ✔");
                 navigate("/login");
             }
         } catch (err) {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import Logo from "./Logo"; 
 
 export default function RegisterForm({
   form,
@@ -39,6 +40,9 @@ export default function RegisterForm({
 
   return (
     <div className="z-10 bg-[#1e2336] p-10 rounded-xl shadow-2xl w-full max-w-md backdrop-filter backdrop-blur-sm border border-gray-700/50 text-white">
+      
+      <Logo />
+
       <h2 className="text-3xl font-bold text-center mb-2">
         Daftar Akun Baru
       </h2>
@@ -55,7 +59,6 @@ export default function RegisterForm({
           </p>
         )}
 
-        {/* Nama Lengkap */}
         <div className="flex flex-col">
           <label htmlFor="full_name" className="text-sm font-medium mb-1">
             Nama Lengkap
@@ -72,7 +75,6 @@ export default function RegisterForm({
           />
         </div>
 
-        {/* Email */}
         <div className="flex flex-col">
           <label htmlFor="email" className="text-sm font-medium mb-1">
             Alamat Email
@@ -89,7 +91,6 @@ export default function RegisterForm({
           />
         </div>
 
-        {/* Password */}
         <div className="flex flex-col">
           <label htmlFor="password" className="text-sm font-medium mb-1">
             Kata Sandi
@@ -115,7 +116,6 @@ export default function RegisterForm({
           </div>
         </div>
 
-        {/* Button */}
         <button
           type="submit"
           className="mt-4 w-full py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold shadow-lg transition duration-200"
@@ -139,4 +139,5 @@ export default function RegisterForm({
       </form>
     </div>
   );
+}
 }

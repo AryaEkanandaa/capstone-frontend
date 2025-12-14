@@ -39,7 +39,7 @@ export default function Chatbot() {
   const [isFocused, setIsFocused] = useState(false);
 
   // =====================================================
-  // MOBILE SIDEBAR
+  // MOBILE CHAT SIDEBAR
   // =====================================================
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const touchStartX = useRef(null);
@@ -50,7 +50,7 @@ export default function Chatbot() {
   const bottomRef = useRef(null);
 
   // =====================================================
-  // LOAD USER FROM TOKEN
+  // LOAD USER
   // =====================================================
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -71,7 +71,7 @@ export default function Chatbot() {
   }, [messages, loading]);
 
   // =====================================================
-  // SWIPE GESTURE
+  // SWIPE GESTURE (CHAT SIDEBAR ONLY)
   // =====================================================
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
@@ -82,8 +82,8 @@ export default function Chatbot() {
 
     const diff = e.changedTouches[0].clientX - touchStartX.current;
 
-    if (diff > 80) setMobileSidebarOpen(true);   // swipe right
-    if (diff < -80) setMobileSidebarOpen(false); // swipe left
+    if (diff > 80) setMobileSidebarOpen(true);
+    if (diff < -80) setMobileSidebarOpen(false);
 
     touchStartX.current = null;
   };
@@ -97,11 +97,11 @@ export default function Chatbot() {
       title: "Prediksi Manual (ML)",
       description: "Isi data sensor & jalankan prediksi kerusakan otomatis",
       template: `Prediksi Manual ML
-Air Temp = 
-Process Temp = 
-RPM = 
-Torque = 
-Wear = `,
+Air Temp =
+Process Temp =
+RPM =
+Torque =
+Wear =`,
     },
     {
       icon: Search,
@@ -130,10 +130,10 @@ Wear = `,
     {
       icon: Wrench,
       title: "Buat Ticket Maintenance",
-      description: "Laporkan mesin bermasalah & buat tiket maintenance",
+      description: "Laporkan mesin bermasalah",
       template: `Buat ticket maintenance
-Mesin = 
-Catatan Tambahan = `,
+Mesin =
+Catatan Tambahan =`,
     },
   ];
 
@@ -166,8 +166,7 @@ Catatan Tambahan = `,
         ...prev,
         { id: Date.now(), text: res.reply, isBot: true },
       ]);
-    } catch (err) {
-      console.error(err);
+    } catch {
       setMessages((prev) => [
         ...prev,
         { id: Date.now(), text: "Server error", isBot: true },
@@ -177,9 +176,6 @@ Catatan Tambahan = `,
     }
   };
 
-  // =====================================================
-  // KEY HANDLER
-  // =====================================================
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -187,9 +183,6 @@ Catatan Tambahan = `,
     }
   };
 
-  // =====================================================
-  // NEW CHAT
-  // =====================================================
   const handleNewChat = async () => {
     setSessionId(null);
     setMessages([]);
@@ -199,14 +192,10 @@ Catatan Tambahan = `,
     setSessionId(sid);
   };
 
-  // =====================================================
-  // SELECT CHAT
-  // =====================================================
   const handleSelectChat = async (sid) => {
     if (!sid) {
       setSessionId(null);
       setMessages([]);
-      setInput("");
       return;
     }
 
@@ -222,8 +211,6 @@ Catatan Tambahan = `,
           isBot: m.sender === "bot",
         }))
       );
-    } catch (err) {
-      console.error("Gagal load chat history", err);
     } finally {
       setLoading(false);
     }
@@ -240,7 +227,7 @@ Catatan Tambahan = `,
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ================= DESKTOP SIDEBAR ================= */}
+      {/* ================= DESKTOP CHAT SIDEBAR ================= */}
       <div className="hidden md:block">
         <ChatSidebar
           username={USER_NAME}
@@ -250,7 +237,7 @@ Catatan Tambahan = `,
         />
       </div>
 
-      {/* ================= MOBILE DRAWER ================= */}
+      {/* ================= MOBILE CHAT SIDEBAR DRAWER ================= */}
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
@@ -277,7 +264,7 @@ Catatan Tambahan = `,
 
       {/* ================= CHAT AREA ================= */}
       <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-br from-gray-50 to-gray-100">
-        {/* MOBILE HEADER */}
+        {/* MOBILE CHAT HEADER */}
         <div className="md:hidden h-14 bg-white border-b flex items-center px-4">
           <button onClick={() => setMobileSidebarOpen(true)}>
             <MessageSquare size={22} />
@@ -285,33 +272,42 @@ Catatan Tambahan = `,
           <h2 className="ml-4 font-semibold">Chatbot</h2>
         </div>
 
-        {showWelcome && (
-          <ChatWelcome
-            userName={USER_NAME}
-            quickActions={quickActions}
-            setInput={setInput}
-          />
-        )}
+        {/* CHAT BODY */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            {showWelcome && (
+              <ChatWelcome
+                userName={USER_NAME}
+                quickActions={quickActions}
+                setInput={setInput}
+              />
+            )}
 
-        {messages.length > 0 && (
-          <ChatMessages
-            messages={messages}
-            loading={loading}
-            bottomRef={bottomRef}
-          />
-        )}
+            {messages.length > 0 && (
+              <ChatMessages
+                messages={messages}
+                loading={loading}
+                bottomRef={bottomRef}
+              />
+            )}
+          </div>
 
-        <ChatInput
-          input={input}
-          setInput={setInput}
-          sendMessage={sendMessage}
-          loading={loading}
-          isFocused={isFocused}
-          setIsFocused={setIsFocused}
-          handleKeyPress={handleKeyPress}
-        />
+          {/* INPUT */}
+          <div className="border-t bg-white">
+            <ChatInput
+              input={input}
+              setInput={setInput}
+              sendMessage={sendMessage}
+              loading={loading}
+              isFocused={isFocused}
+              setIsFocused={setIsFocused}
+              handleKeyPress={handleKeyPress}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+
 

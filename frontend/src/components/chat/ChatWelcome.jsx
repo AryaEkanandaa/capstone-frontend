@@ -36,21 +36,42 @@ export default function ChatWelcome({ userName, quickActions, setInput }) {
           </p>
         </div>
 
-        {/* QUICK ACTIONS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-          {quickActions.map((action, i) => (
-            <QuickActionCard
-              key={i}
-              {...action}
-              setInput={setInput}
-            />
-          ))}
+        {/* ================= QUICK ACTIONS ================= */}
+        <div className="pt-4">
+
+          {/* MOBILE — horizontal scroll */}
+          <div className="flex sm:hidden gap-3 overflow-x-auto pb-2 -mx-4 px-4">
+            {quickActions.map((action, i) => (
+              <div
+                key={i}
+                className="min-w-[260px] flex-shrink-0"
+              >
+                <QuickActionCard
+                  {...action}
+                  setInput={setInput}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* TABLET & DESKTOP — grid */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {quickActions.map((action, i) => (
+              <QuickActionCard
+                key={i}
+                {...action}
+                setInput={setInput}
+              />
+            ))}
+          </div>
+
         </div>
 
         {/* FOOTNOTE */}
         <p className="text-center text-sm text-gray-500 pt-6">
           Atau ketik pertanyaan Anda di bawah untuk memulai percakapan
         </p>
+
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Plus, MessageSquare, Trash2 } from "lucide-react";
 
-const API = "http://localhost:5000/api/chat";
+const API = `${import.meta.env.VITE_API_BASE}/chat`;
 
 export default function ChatSidebar({
   username,

@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import {
   Zap,
@@ -7,12 +6,14 @@ import {
   AlertTriangle,
   AlertOctagon,
   Wrench,
+  MessageSquare,
 } from "lucide-react";
 
 import ChatSidebar from "../components/chat/ChatSidebar";
 import ChatWelcome from "../components/chat/ChatWelcome";
 import ChatMessages from "../components/chat/ChatMessages";
 import ChatInput from "../components/chat/ChatInput";
+
 import {
   createSession,
   sendChatMessage,
@@ -22,17 +23,35 @@ import {
 import toTitleCase from "../utils/toTitleCase";
 
 export default function Chatbot() {
+  // =====================================================
+  // USER
+  // =====================================================
   const [USER_NAME, setUSER_NAME] = useState("Pengguna");
   const [USER_ID, setUSER_ID] = useState(null);
 
+  // =====================================================
+  // CHAT STATE
+  // =====================================================
   const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
+  // =====================================================
+  // MOBILE SIDEBAR
+  // =====================================================
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const touchStartX = useRef(null);
+
+  // =====================================================
+  // SCROLL
+  // =====================================================
   const bottomRef = useRef(null);
 
+  // =====================================================
+  // LOAD USER FROM TOKEN
+  // =====================================================
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
@@ -41,13 +60,37 @@ export default function Chatbot() {
       const d = JSON.parse(atob(token.split(".")[1]));
       setUSER_NAME(toTitleCase(d.full_name));
       setUSER_ID(d.id);
-    } catch { }
+    } catch {}
   }, []);
 
+  // =====================================================
+  // AUTO SCROLL
+  // =====================================================
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  // =====================================================
+  // SWIPE GESTURE
+  // =====================================================
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+
+    if (diff > 80) setMobileSidebarOpen(true);   // swipe right
+    if (diff < -80) setMobileSidebarOpen(false); // swipe left
+
+    touchStartX.current = null;
+  };
+
+  // =====================================================
+  // QUICK ACTIONS
+  // =====================================================
   const quickActions = [
     {
       icon: Zap,
@@ -94,6 +137,9 @@ Catatan Tambahan = `,
     },
   ];
 
+  // =====================================================
+  // SEND MESSAGE
+  // =====================================================
   const sendMessage = async (text) => {
     const cleaned = text.trim();
     if (!cleaned) return;
@@ -124,24 +170,26 @@ Catatan Tambahan = `,
       console.error(err);
       setMessages((prev) => [
         ...prev,
-        { id: Date.now(), text: " Server error", isBot: true },
+        { id: Date.now(), text: "Server error", isBot: true },
       ]);
     } finally {
       setLoading(false);
     }
   };
 
+  // =====================================================
+  // KEY HANDLER
+  // =====================================================
   const handleKeyPress = (e) => {
-    if (e.key === "Enter" && e.shiftKey) {
-      return;
-    }
-
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage(input);
     }
   };
 
+  // =====================================================
+  // NEW CHAT
+  // =====================================================
   const handleNewChat = async () => {
     setSessionId(null);
     setMessages([]);
@@ -151,9 +199,10 @@ Catatan Tambahan = `,
     setSessionId(sid);
   };
 
-
+  // =====================================================
+  // SELECT CHAT
+  // =====================================================
   const handleSelectChat = async (sid) => {
-    // 🔄 JIKA SESSION DIHAPUS
     if (!sid) {
       setSessionId(null);
       setMessages([]);
@@ -166,7 +215,6 @@ Catatan Tambahan = `,
 
     try {
       const data = await getChatMessages(sid);
-
       setMessages(
         data.map((m) => ({
           id: m.id,
@@ -179,22 +227,63 @@ Catatan Tambahan = `,
     } finally {
       setLoading(false);
     }
-  };  
-
+  };
 
   const showWelcome = messages.length === 0;
 
+  // =====================================================
+  // RENDER
+  // =====================================================
   return (
-    <div className="flex h-full overflow-hidden">
+    <div
+      className="flex h-full overflow-hidden relative"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* ================= DESKTOP SIDEBAR ================= */}
+      <div className="hidden md:block">
+        <ChatSidebar
+          username={USER_NAME}
+          onNewChat={handleNewChat}
+          onSelectChat={handleSelectChat}
+          activeSessionId={sessionId}
+        />
+      </div>
 
-      <ChatSidebar
-        username={USER_NAME}
-        onNewChat={handleNewChat}
-        onSelectChat={handleSelectChat}
-        activeSessionId={sessionId}
-      />
+      {/* ================= MOBILE DRAWER ================= */}
+      {mobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <div className="relative w-64 h-full bg-white">
+            <ChatSidebar
+              mobile
+              username={USER_NAME}
+              onNewChat={() => {
+                handleNewChat();
+                setMobileSidebarOpen(false);
+              }}
+              onSelectChat={(sid) => {
+                handleSelectChat(sid);
+                setMobileSidebarOpen(false);
+              }}
+              activeSessionId={sessionId}
+            />
+          </div>
+        </div>
+      )}
 
+      {/* ================= CHAT AREA ================= */}
       <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-br from-gray-50 to-gray-100">
+        {/* MOBILE HEADER */}
+        <div className="md:hidden h-14 bg-white border-b flex items-center px-4">
+          <button onClick={() => setMobileSidebarOpen(true)}>
+            <MessageSquare size={22} />
+          </button>
+          <h2 className="ml-4 font-semibold">Chatbot</h2>
+        </div>
 
         {showWelcome && (
           <ChatWelcome
@@ -222,7 +311,7 @@ Catatan Tambahan = `,
           handleKeyPress={handleKeyPress}
         />
       </div>
-
     </div>
   );
 }
+

@@ -12,35 +12,36 @@ export default function MainLayout() {
   return (
     <div className="flex min-h-screen bg-gray-100">
 
-      {/* 📱 MOBILE SIDEBAR (overlay) */}
-      <div
-        className={`fixed inset-0 z-50 md:hidden ${
-          sidebarOpen ? "block" : "hidden"
-        }`}
-      >
-        <div
-          className="absolute inset-0 bg-black/40"
-          onClick={() => setSidebarOpen(false)}
-        />
-        <div className="relative w-64 h-full">
-          <Sidebar />
+      {/* ================= MOBILE SIDEBAR (OVERLAY) ================= */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setSidebarOpen(false)}
+          />
+          
+          {/* sidebar */}
+          <div className="relative w-64 h-full bg-[#111827]">
+            <Sidebar />
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* 💻 DESKTOP SIDEBAR */}
+      {/* ================= DESKTOP SIDEBAR ================= */}
       <aside className="hidden md:block">
         <Sidebar />
       </aside>
 
-      {/* ✅ RIGHT SIDE */}
+      {/* ================= RIGHT SIDE ================= */}
       <div className="flex-1 flex flex-col min-w-0">
 
-        {/* 🧭 Navbar */}
+        {/* NAVBAR */}
         {!isChatbot && (
           <Navbar onMenuClick={() => setSidebarOpen(true)} />
         )}
 
-        {/* 🔥 Content */}
+        {/* CONTENT */}
         {isChatbot ? (
           <div className="flex-1 overflow-hidden">
             <Outlet />

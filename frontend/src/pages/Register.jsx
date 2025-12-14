@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RegisterForm from "../components/RegisterForm";
+import AnimatedBackground from "../components/AnimatedBackground"; 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function Register() {
@@ -40,10 +41,10 @@ export default function Register() {
         }
     };
 
-    return (
+     return (
         <div className="relative h-screen flex items-center justify-center bg-[#0a0f18] text-white overflow-hidden">
-            <div className="absolute inset-0 z-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at center, #3f4770 0%, #0a0f18 70%)' }}></div>
-            <div className="absolute inset-0 z-0" style={{ backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.5), rgba(0,0,0,0))' }}></div>
+            
+            <AnimatedBackground />
 
             <RegisterForm
                 form={form}

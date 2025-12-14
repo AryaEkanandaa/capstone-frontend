@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import RegisterForm from "../components/RegisterForm"; 
+import RegisterForm from "../components/RegisterForm";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function Register() {
     const navigate = useNavigate();
@@ -18,17 +19,16 @@ export default function Register() {
         e.preventDefault();
         setError("");
 
-        const dataToSend = form; 
+        const dataToSend = form;
 
         try {
-            const res = await fetch("http://localhost:5000/api/auth/register", {
+            const res = await fetch(`${API_BASE}/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(dataToSend), 
+                body: JSON.stringify(dataToSend),
             });
-    
             const json = await res.json();
-    
+
             if (json.error) {
                 setError(json.error || "Register gagal. Coba lagi.");
             } else {

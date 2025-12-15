@@ -4,20 +4,19 @@ import Sidebar from "./components/SideBar";
 import Navbar from "./components/Navbar";
 
 export default function MainLayout() {
-  const [mainSidebarOpen, setMainSidebarOpen] = useState(false);
-  const [chatSidebarOpen, setChatSidebarOpen] = useState(false);
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { pathname } = useLocation();
+
   const isChatbot = pathname.startsWith("/chatbot");
+  const isMobile = window.innerWidth < 768;
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
-
-      {mainSidebarOpen && (
+    <div className="flex min-h-screen bg-gray-100">
+      {sidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
             className="absolute inset-0 bg-black/40"
-            onClick={() => setMainSidebarOpen(false)}
+            onClick={() => setSidebarOpen(false)}
           />
           <div className="relative w-64 h-full bg-[#111827]">
             <Sidebar />
@@ -29,31 +28,14 @@ export default function MainLayout() {
         <Sidebar />
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0 min-h-0">
-
-        {/* NAVBAR */}
-        {(
-          <div className="md:hidden">
-            <Navbar
-              onMenuClick={() => setMainSidebarOpen(true)}
-              onChatClick={() => setChatSidebarOpen(true)}
-            />
-          </div>
+      <div className="flex-1 flex flex-col min-w-0">
+        {(!isChatbot || isMobile) && (
+          <Navbar onMenuClick={() => setSidebarOpen(true)} />
         )}
 
-        {(
-          !isChatbot && (
-            <div className="hidden md:block">
-              <Navbar onMenuClick={() => setMainSidebarOpen(true)} />
-            </div>
-          )
-        )}
-
-        {/* CONTENT */}
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <Outlet context={{ chatSidebarOpen, setChatSidebarOpen }} />
+        <div className="flex-1 overflow-hidden">
+          <Outlet />
         </div>
-
       </div>
     </div>
   );

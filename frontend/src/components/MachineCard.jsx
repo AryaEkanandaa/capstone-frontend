@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Activity, AlertTriangle, CheckCircle } from "lucide-react";
 import useCountUp from "../hooks/useCountUp";
-import { useNavigate } from "react-router-dom";
 
 function MachineCard({
   name,
@@ -18,8 +17,6 @@ function MachineCard({
   anomaly,
   anomaly_score,
 }) {
-  const navigate = useNavigate();
-
   const [highlight, setHighlight] = useState(false);
   const prev = useRef({ status, prediction, probability });
 
@@ -52,13 +49,11 @@ function MachineCard({
 
   return (
     <div
-      onClick={() => navigate(`/machine/${machine_id}`)}
-      className={`cursor-pointer w-full max-w-md border rounded-xl overflow-hidden
+      className={`w-full max-w-md border rounded-xl overflow-hidden
         ${statusStyle}
         ${highlight ? "ring-2 ring-indigo-300" : ""}
         transition-all duration-200 hover:shadow-md`}
     >
-      {/* HEADER */}
       <div className="px-3 py-2 flex justify-between items-center text-sm font-semibold">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4" />
@@ -70,10 +65,7 @@ function MachineCard({
         </span>
       </div>
 
-      {/* BODY */}
       <div className="px-4 py-3 space-y-3 text-sm bg-white">
-
-        {/* PREDIKSI */}
         <div>
           <p className="text-gray-500 text-xs mb-1">Prediksi Terakhir</p>
           {prediction ? (
@@ -97,7 +89,6 @@ function MachineCard({
           )}
         </div>
 
-        {/* ANOMALI */}
         {anomaly === 1 && (
           <div className="p-2 rounded-md bg-orange-50 border border-orange-300">
             <p className="text-xs font-semibold text-orange-700">
@@ -109,7 +100,6 @@ function MachineCard({
           </div>
         )}
 
-        {/* SENSOR */}
         <div>
           <p className="text-gray-500 text-xs mb-1">Data Sensor</p>
           <div className="grid grid-cols-2 gap-y-1 text-gray-800">
@@ -120,7 +110,11 @@ function MachineCard({
             <Info label="Tool Wear" value={`${tool_wear ?? "-"} min`} />
             <Info
               label="Update"
-              value={timestamp ? new Date(timestamp).toLocaleTimeString("id-ID") : "-"}
+              value={
+                timestamp
+                  ? new Date(timestamp).toLocaleTimeString("id-ID")
+                  : "-"
+              }
             />
           </div>
         </div>

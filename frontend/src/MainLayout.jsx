@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { useLocation, Outlet } from "react-router-dom";
 import Sidebar from "./components/SideBar";
 import Navbar from "./components/Navbar";
 
 export default function MainLayout() {
   const [mainSidebarOpen, setMainSidebarOpen] = useState(false);
   const [chatSidebarOpen, setChatSidebarOpen] = useState(false);
-
   const { pathname } = useLocation();
+
   const isChatbot = pathname.startsWith("/chatbot");
 
   return (
@@ -31,27 +31,24 @@ export default function MainLayout() {
 
       <div className="flex-1 flex flex-col min-w-0">
 
-        {!isChatbot && (
-          <Navbar
-            onMenuClick={() => setMainSidebarOpen(true)}
-          />
-        )}
-
-        {isChatbot && (
+        {/* NAVBAR */}
+        <div className="md:hidden">
           <Navbar
             onMenuClick={() => setMainSidebarOpen(true)}
             onChatClick={() => setChatSidebarOpen(true)}
           />
+        </div>
+
+        {!isChatbot && (
+          <div className="hidden md:block">
+            <Navbar onMenuClick={() => setMainSidebarOpen(true)} />
+          </div>
         )}
 
         <div className="flex-1 overflow-hidden">
-          <Outlet
-            context={{
-              chatSidebarOpen,
-              setChatSidebarOpen,
-            }}
-          />
+          <Outlet context={{ chatSidebarOpen, setChatSidebarOpen }} />
         </div>
+
       </div>
     </div>
   );

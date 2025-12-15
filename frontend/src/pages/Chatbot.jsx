@@ -149,7 +149,7 @@ Catatan Tambahan =`,
   };
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex flex-1 min-h-0 overflow-hidden">
 
       <div className="hidden md:block">
         <ChatSidebar
@@ -187,8 +187,8 @@ Catatan Tambahan =`,
         </div>
       )}
 
-      <div className="flex-1 flex flex-col bg-gray-50">
-        <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 flex flex-col bg-gray-50 min-h-0">
+        <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0">
           {messages.length === 0 && (
             <ChatWelcome
               userName={USER_NAME}
@@ -206,11 +206,13 @@ Catatan Tambahan =`,
           )}
         </div>
 
-        <ChatInput
-          input={input}
-          setInput={setInput}
-          sendMessage={sendMessage}
-        />
+        <div className="border-t bg-white">
+          <ChatInput
+            input={input}
+            setInput={setInput}
+            sendMessage={sendMessage}
+          />
+        </div>
       </div>
     </div>
   );

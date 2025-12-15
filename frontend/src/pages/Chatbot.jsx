@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   AlertOctagon,
   Wrench,
-  MessageSquare,
 } from "lucide-react";
 
 import ChatSidebar from "../components/chat/ChatSidebar";
@@ -23,35 +22,20 @@ import {
 import toTitleCase from "../utils/toTitleCase";
 
 export default function Chatbot() {
-  // =====================================================
-  // USER
-  // =====================================================
   const [USER_NAME, setUSER_NAME] = useState("Pengguna");
   const [USER_ID, setUSER_ID] = useState(null);
 
-  // =====================================================
-  // CHAT STATE
-  // =====================================================
   const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
-  // =====================================================
-  // MOBILE CHAT SIDEBAR
-  // =====================================================
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const touchStartX = useRef(null);
 
-  // =====================================================
-  // SCROLL
-  // =====================================================
   const bottomRef = useRef(null);
 
-  // =====================================================
-  // LOAD USER
-  // =====================================================
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
@@ -63,34 +47,22 @@ export default function Chatbot() {
     } catch {}
   }, []);
 
-  // =====================================================
-  // AUTO SCROLL
-  // =====================================================
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // =====================================================
-  // SWIPE GESTURE (CHAT SIDEBAR ONLY)
-  // =====================================================
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
   };
 
   const handleTouchEnd = (e) => {
     if (touchStartX.current === null) return;
-
     const diff = e.changedTouches[0].clientX - touchStartX.current;
-
     if (diff > 80) setMobileSidebarOpen(true);
     if (diff < -80) setMobileSidebarOpen(false);
-
     touchStartX.current = null;
   };
 
-  // =====================================================
-  // QUICK ACTIONS
-  // =====================================================
   const quickActions = [
     {
       icon: Zap,
@@ -132,25 +104,21 @@ Wear =`,
       title: "Buat Ticket Maintenance",
       description: "Laporkan mesin bermasalah",
       template: `Buat ticket maintenance
-Mesin =
+Mesin = Mesin X
 Catatan Tambahan =`,
     },
   ];
 
-  // =====================================================
-  // SEND MESSAGE
-  // =====================================================
   const sendMessage = async (text) => {
     const cleaned = text.trim();
     if (!cleaned) return;
 
-    setMessages((prev) => [...prev, { id: Date.now(), text, isBot: false }]);
+    setMessages((p) => [...p, { id: Date.now(), text, isBot: false }]);
     setInput("");
     setLoading(true);
 
     try {
       let sid = sessionId;
-
       if (!sid) {
         sid = await createSession(USER_ID);
         setSessionId(sid);
@@ -162,13 +130,13 @@ Catatan Tambahan =`,
         userId: USER_ID,
       });
 
-      setMessages((prev) => [
-        ...prev,
+      setMessages((p) => [
+        ...p,
         { id: Date.now(), text: res.reply, isBot: true },
       ]);
     } catch {
-      setMessages((prev) => [
-        ...prev,
+      setMessages((p) => [
+        ...p,
         { id: Date.now(), text: "Server error", isBot: true },
       ]);
     } finally {
@@ -187,7 +155,6 @@ Catatan Tambahan =`,
     setSessionId(null);
     setMessages([]);
     setInput("");
-
     const sid = await createSession(USER_ID);
     setSessionId(sid);
   };
@@ -201,7 +168,6 @@ Catatan Tambahan =`,
 
     setSessionId(sid);
     setLoading(true);
-
     try {
       const data = await getChatMessages(sid);
       setMessages(
@@ -218,16 +184,12 @@ Catatan Tambahan =`,
 
   const showWelcome = messages.length === 0;
 
-  // =====================================================
-  // RENDER
-  // =====================================================
   return (
     <div
       className="flex h-full overflow-hidden relative"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ================= DESKTOP CHAT SIDEBAR ================= */}
       <div className="hidden md:block">
         <ChatSidebar
           username={USER_NAME}
@@ -237,7 +199,6 @@ Catatan Tambahan =`,
         />
       </div>
 
-      {/* ================= MOBILE CHAT SIDEBAR DRAWER ================= */}
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
@@ -262,17 +223,7 @@ Catatan Tambahan =`,
         </div>
       )}
 
-      {/* ================= CHAT AREA ================= */}
       <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-br from-gray-50 to-gray-100">
-        {/* MOBILE CHAT HEADER */}
-        <div className="md:hidden h-14 bg-white border-b flex items-center px-4">
-          <button onClick={() => setMobileSidebarOpen(true)}>
-            <MessageSquare size={22} />
-          </button>
-          <h2 className="ml-4 font-semibold">Chatbot</h2>
-        </div>
-
-        {/* CHAT BODY */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto px-4 py-4">
             {showWelcome && (
@@ -292,7 +243,6 @@ Catatan Tambahan =`,
             )}
           </div>
 
-          {/* INPUT */}
           <div className="border-t bg-white">
             <ChatInput
               input={input}
@@ -309,5 +259,3 @@ Catatan Tambahan =`,
     </div>
   );
 }
-
-

@@ -16,9 +16,6 @@ export default function ChatSidebar({
   const token = localStorage.getItem("accessToken");
   const userId = token ? JSON.parse(atob(token.split(".")[1]))?.id : null;
 
-  // =====================================================
-  // LOAD SESSIONS
-  // =====================================================
   async function loadSessions() {
     if (!userId) return;
     setLoading(true);
@@ -28,8 +25,6 @@ export default function ChatSidebar({
       });
       const d = await r.json();
       setSessions(d);
-    } catch (e) {
-      console.error("Load session gagal", e);
     } finally {
       setLoading(false);
     }
@@ -39,41 +34,31 @@ export default function ChatSidebar({
     loadSessions();
   }, []);
 
-  // =====================================================
-  // DELETE SESSION
-  // =====================================================
   async function handleDelete(sessionId) {
-    try {
-      await fetch(`${API}/session/${sessionId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    await fetch(`${API}/session/${sessionId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      if (sessionId === activeSessionId) {
-        onSelectChat(null);
-      }
-
-      setConfirmId(null);
-      loadSessions();
-    } catch (e) {
-      console.error("Gagal hapus session", e);
+    if (sessionId === activeSessionId) {
+      onSelectChat(null);
     }
+
+    setConfirmId(null);
+    loadSessions();
   }
 
   return (
     <>
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-white border-r flex flex-col overflow-x-hidden">
+      <aside className="w-64 h-full bg-white border-r flex flex-col overflow-hidden">
 
-        {/* HEADER */}
-        <div className="p-4 border-b bg-gradient-to-r from-indigo-50 to-blue-50">
+        <div className="p-4 border-b">
           <h1 className="text-lg font-bold text-gray-800">PrediX AI</h1>
           <p className="text-xs text-gray-600">
             Selamat datang, <b>{username}</b>
           </p>
         </div>
 
-        {/* NEW CHAT */}
         <div className="p-4">
           <button
             onClick={onNewChat}
@@ -84,7 +69,6 @@ export default function ChatSidebar({
           </button>
         </div>
 
-        {/* CHAT LIST */}
         <div className="flex-1 overflow-y-auto px-3 pb-4">
           {loading && (
             <p className="text-xs text-gray-400 text-center py-4">
@@ -108,24 +92,19 @@ export default function ChatSidebar({
                     : "hover:bg-gray-50"}
                 `}
               >
-                {/* SELECT CHAT */}
                 <button
                   onClick={() => onSelectChat(s.id)}
                   className="flex items-center gap-2 flex-1 min-w-0 text-left"
                 >
-                  <MessageSquare
-                    size={14}
-                    className="text-indigo-500 flex-shrink-0"
-                  />
-                  <span className="truncate text-sm text-gray-700 max-w-[160px] block">
+                  <MessageSquare size={14} className="text-indigo-500" />
+                  <span className="truncate text-sm text-gray-700">
                     {s.title || "Chat Baru"}
                   </span>
                 </button>
 
-                {/* DELETE */}
                 <button
                   onClick={() => setConfirmId(s.id)}
-                  className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition flex-shrink-0"
+                  className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -135,17 +114,13 @@ export default function ChatSidebar({
         </div>
       </aside>
 
-      {/* CONFIRM MODAL */}
       {confirmId && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-80 shadow-xl">
-            <h3 className="font-semibold text-gray-900 mb-2">
-              Hapus chat ini?
-            </h3>
+            <h3 className="font-semibold mb-2">Hapus chat ini?</h3>
             <p className="text-sm text-gray-600 mb-4">
               Riwayat percakapan akan dihapus permanen.
             </p>
-
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setConfirmId(null)}

@@ -8,7 +8,6 @@ const MACHINE_COUNT = Number(import.meta.env.VITE_MACHINE_COUNT) || 5;
 const CHART_MAX_POINTS = 40;
 
 export default function Dashboard() {
-
   const token = localStorage.getItem("accessToken");
 
   const [machines, setMachines] = useState(() =>
@@ -27,7 +26,7 @@ export default function Dashboard() {
       timestamp: null,
       anomaly: 0,
       anomaly_score: null,
-      chartPoints: []
+      chartPoints: [],
     }))
   );
 
@@ -36,16 +35,16 @@ export default function Dashboard() {
       try {
         const [sRes, pRes, aRes] = await Promise.all([
           fetch(`${API_BASE}/sensor/latest-all`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }).then(r => r.json()),
-
+            headers: { Authorization: `Bearer ${token}` },
+          }).then((r) => r.json()),
           fetch(`${API_BASE}/predict/latest-by-machine`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }).then(r => r.json()),
-
+            headers: { Authorization: `Bearer ${token}` },
+          }).then((r) => r.json()),
           fetch(`${API_BASE}/anomaly/latest`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }).then(r => r.json()).catch(() => ({ data: [] })),
+            headers: { Authorization: `Bearer ${token}` },
+          })
+            .then((r) => r.json())
+            .catch(() => ({ data: [] })),
         ]);
 
         const sensorData = sRes.data || [];
@@ -58,9 +57,9 @@ export default function Dashboard() {
           return m;
         }, {});
 
-        setMachines(prev =>
-          prev.map(m => {
-            const s = sensorData.find(x => x.machine_id === m.machine_id) || {};
+        setMachines((prev) =>
+          prev.map((m) => {
+            const s = sensorData.find((x) => x.machine_id === m.machine_id) || {};
             const p = predData[m.machine_id] || {};
             const a = anomalyData[m.machine_id] || {};
 
@@ -78,8 +77,8 @@ export default function Dashboard() {
                 temp: s.air_temperature,
                 proc: s.process_temperature,
                 torque: s.torque,
-                wear: s.tool_wear
-              }
+                wear: s.tool_wear,
+              },
             ].slice(-CHART_MAX_POINTS);
 
             return {
@@ -95,15 +94,14 @@ export default function Dashboard() {
               anomaly: a.is_anomaly ? 1 : 0,
               anomaly_score: a.score || null,
               timestamp,
-              chartPoints: chart
+              chartPoints: chart,
             };
           })
         );
 
         sensorData.forEach(
-          s => s?.machine_id && loadTrend(s.machine_id, "10m")
+          (s) => s?.machine_id && loadTrend(s.machine_id, "10m")
         );
-
       } catch (err) {
         console.log("INIT ERROR", err);
       }
@@ -112,9 +110,9 @@ export default function Dashboard() {
     init();
   }, [token]);
 
-  const handleSensorUpdate = useCallback(update => {
-    setMachines(prev =>
-      prev.map(m => {
+  const handleSensorUpdate = useCallback((update) => {
+    setMachines((prev) =>
+      prev.map((m) => {
         if (m.machine_id !== update.machine_id) return m;
 
         const t = update.created_at || new Date().toISOString();
@@ -127,8 +125,8 @@ export default function Dashboard() {
             temp: update.air_temperature,
             proc: update.process_temperature,
             torque: update.torque,
-            wear: update.tool_wear
-          }
+            wear: update.tool_wear,
+          },
         ].slice(-CHART_MAX_POINTS);
 
         return {
@@ -139,37 +137,36 @@ export default function Dashboard() {
           torque: update.torque,
           tool_wear: update.tool_wear,
           timestamp: t,
-          chartPoints: chart
+          chartPoints: chart,
         };
       })
     );
   }, []);
 
-  const handlePredictionUpdate = useCallback(update => {
-    setMachines(prev =>
-      prev.map(m => {
+  const handlePredictionUpdate = useCallback((update) => {
+    setMachines((prev) =>
+      prev.map((m) => {
         if (m.machine_id !== update.machine_id) return m;
-
         return {
           ...m,
           prediction: update.failure_type ?? null,
           probability: update.failure_probability ?? 0,
-          status: update.status || "NORMAL"
+          status: update.status || "NORMAL",
         };
       })
     );
   }, []);
 
-  const handleAnomalyUpdate = useCallback(update => {
-    setMachines(prev =>
-      prev.map(m =>
+  const handleAnomalyUpdate = useCallback((update) => {
+    setMachines((prev) =>
+      prev.map((m) =>
         m.machine_id !== update.machine_id
           ? m
           : {
               ...m,
               anomaly: update.is_anomaly ? 1 : 0,
               anomaly_score: update.score,
-              anomaly_status: update.status
+              anomaly_status: update.status,
             }
       )
     );
@@ -181,8 +178,8 @@ export default function Dashboard() {
     "anomaly:update": handleAnomalyUpdate,
   });
 
-  const hasAnomaly = machines.some(m => m.anomaly === 1);
-  const hasFailure = machines.some(m => m.status !== "NORMAL");
+  const hasAnomaly = machines.some((m) => m.anomaly === 1);
+  const hasFailure = machines.some((m) => m.status !== "NORMAL");
 
   async function loadTrend(machine_id, range = "30m") {
     try {
@@ -193,100 +190,99 @@ export default function Dashboard() {
       const d = await res.json();
       if (d.status !== "success") return;
 
-      setMachines(prev =>
-        prev.map(m =>
+      setMachines((prev) =>
+        prev.map((m) =>
           m.machine_id !== machine_id
             ? m
             : {
                 ...m,
                 chartPoints: [
-                  ...d.trend.map(p => ({
+                  ...d.trend.map((p) => ({
                     x: new Date(p.created_at).getTime(),
                     rpm: p.rotational_speed,
                     temp: p.air_temperature,
                     proc: p.process_temperature,
                     torque: p.torque,
-                    wear: p.tool_wear
+                    wear: p.tool_wear,
                   })),
-                  ...m.chartPoints
-                ].slice(-CHART_MAX_POINTS)
+                  ...m.chartPoints,
+                ].slice(-CHART_MAX_POINTS),
               }
         )
       );
     } catch {}
   }
 
-  /* ======================= RENDER ======================= */
-
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
-
       {(hasAnomaly || hasFailure) && (
         <div className="mb-10">
           <h2 className="text-xl font-bold mb-4">Peringatan Aktif</h2>
 
           {hasAnomaly && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {machines.filter(m => m.anomaly === 1).map(m => (
-                <div
-                  key={m.machine_id}
-                  className="p-4 border rounded-lg bg-orange-50 border-orange-400 shadow"
-                >
-                  <h3 className="font-bold text-lg text-orange-700">
-                    {m.name}
-                  </h3>
-                  <p className="text-sm font-semibold">
-                    Anomali terdeteksi
-                  </p>
-                  <p className="text-xs text-gray-700 mt-1">
-                    Nilai SCORE: {m.anomaly_score?.toFixed(3)}
-                  </p>
-                </div>
-              ))}
+              {machines
+                .filter((m) => m.anomaly === 1)
+                .map((m) => (
+                  <div
+                    key={m.machine_id}
+                    className="p-4 border rounded-lg bg-orange-50 border-orange-400 shadow"
+                  >
+                    <h3 className="font-bold text-lg text-orange-700">
+                      {m.name}
+                    </h3>
+                    <p className="text-sm font-semibold">
+                      Anomali terdeteksi
+                    </p>
+                    <p className="text-xs text-gray-700 mt-1">
+                      Nilai SCORE: {m.anomaly_score?.toFixed(3)}
+                    </p>
+                  </div>
+                ))}
             </div>
           )}
 
           {hasFailure && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {machines.filter(m => m.status !== "NORMAL").map(m => (
-                <div
-                  key={m.machine_id}
-                  className={`p-4 rounded-lg shadow text-sm ${
-                    m.status === "CRITICAL"
-                      ? "bg-red-50 border border-red-400"
-                      : "bg-yellow-50 border border-yellow-400"
-                  }`}
-                >
-                  <h3 className="font-bold">{m.name}</h3>
-                  <p>
-                    {m.prediction} — {(m.probability * 100).toFixed(1)}%
-                  </p>
-                  <p>Status: {m.status}</p>
-                </div>
-              ))}
+              {machines
+                .filter((m) => m.status !== "NORMAL")
+                .map((m) => (
+                  <div
+                    key={m.machine_id}
+                    className={`p-4 rounded-lg shadow text-sm ${
+                      m.status === "CRITICAL"
+                        ? "bg-red-50 border border-red-400"
+                        : "bg-yellow-50 border border-yellow-400"
+                    }`}
+                  >
+                    <h3 className="font-bold">{m.name}</h3>
+                    <p>
+                      {m.prediction} —{" "}
+                      {(m.probability * 100).toFixed(1)}%
+                    </p>
+                    <p>Status: {m.status}</p>
+                  </div>
+                ))}
             </div>
           )}
         </div>
       )}
 
-      {/* ===================== MACHINE LIST ===================== */}
       <h2 className="text-xl font-bold mb-6">Daftar Mesin</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        {machines.map(m => (
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-12">
+        {machines.map((m) => (
           <MachineCard key={m.machine_id} {...m} />
         ))}
       </div>
 
-      {/* ===================== LIVE TREND ===================== */}
       <h2 className="text-xl font-bold mb-4">
         Tren Parameter Mesin (Realtime)
       </h2>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        {machines.map(m => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-10">
+        {machines.map((m) => (
           <MachineTrendChart key={m.machine_id} machine={m} />
         ))}
       </div>
-
     </div>
   );
 }

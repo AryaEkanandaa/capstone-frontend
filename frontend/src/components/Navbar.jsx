@@ -1,37 +1,31 @@
+import { Menu, MessageSquare } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { Menu } from "lucide-react";
 
 export default function Navbar({ onMenuClick }) {
-  const location = useLocation();
-
-  const getPageTitle = () => {
-    const path = location.pathname;
-    if (path.includes("dashboard")) return "Dashboard";
-    return "PrediX AI";
-  };
+  const { pathname } = useLocation();
+  const isChatbot = pathname.startsWith("/chatbot");
 
   return (
-    <div className="
-      relative z-40
-      w-full bg-white border-b h-16
-      flex items-center justify-between
-      px-4 sm:px-6
-    ">
-      {/* ☰ HAMBURGER — MOBILE */}
-      <button
-        className="md:hidden pointer-events-auto"
-        onClick={onMenuClick}
-      >
-        <Menu size={24} />
+    <div className="w-full bg-white border-b h-16 flex items-center px-4 gap-3">
+
+      <button className="md:hidden" onClick={onMenuClick}>
+        <Menu size={22} />
       </button>
 
-      <h2 className="text-lg sm:text-xl font-semibold">
-        {getPageTitle()}
-      </h2>
+      {isChatbot && (
+        <button
+          className="md:hidden"
+          onClick={() => {
+            window.dispatchEvent(new Event("open-chat-sidebar"));
+          }}
+        >
+          <MessageSquare size={22} />
+        </button>
+      )}
 
-      {/* spacer */}
-      <div className="w-6" />
+      <h2 className="font-semibold text-lg ml-2">
+        PrediX AI
+      </h2>
     </div>
   );
 }
-

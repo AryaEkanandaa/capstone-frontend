@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
 import {
   Zap,
   Search,
@@ -23,8 +22,6 @@ import {
 import toTitleCase from "../utils/toTitleCase";
 
 export default function Chatbot() {
-  const { chatSidebarOpen, setChatSidebarOpen } = useOutletContext();
-
   const [USER_NAME, setUSER_NAME] = useState("Pengguna");
   const [USER_ID, setUSER_ID] = useState(null);
 
@@ -32,12 +29,17 @@ export default function Chatbot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const touchStartX = useRef(null);
 
   const bottomRef = useRef(null);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
+
     try {
       const d = JSON.parse(atob(token.split(".")[1]));
       setUSER_NAME(toTitleCase(d.full_name));
@@ -48,6 +50,18 @@ export default function Chatbot() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    if (diff > 80) setMobileSidebarOpen(true);
+    if (diff < -80) setMobileSidebarOpen(false);
+    touchStartX.current = null;
+  };
 
   const quickActions = [
     {
@@ -90,15 +104,16 @@ Wear =`,
       title: "Buat Ticket Maintenance",
       description: "Laporkan mesin bermasalah",
       template: `Buat ticket maintenance
-Mesin =
+Mesin = Mesin X
 Catatan Tambahan =`,
     },
   ];
 
   const sendMessage = async (text) => {
-    if (!text.trim()) return;
+    const cleaned = text.trim();
+    if (!cleaned) return;
 
-    setMessages(p => [...p, { id: Date.now(), text, isBot: false }]);
+    setMessages((p) => [...p, { id: Date.now(), text, isBot: false }]);
     setInput("");
     setLoading(true);
 
@@ -115,10 +130,33 @@ Catatan Tambahan =`,
         userId: USER_ID,
       });
 
-      setMessages(p => [...p, { id: Date.now(), text: res.reply, isBot: true }]);
+      setMessages((p) => [
+        ...p,
+        { id: Date.now(), text: res.reply, isBot: true },
+      ]);
+    } catch {
+      setMessages((p) => [
+        ...p,
+        { id: Date.now(), text: "Server error", isBot: true },
+      ]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(input);
+    }
+  };
+
+  const handleNewChat = async () => {
+    setSessionId(null);
+    setMessages([]);
+    setInput("");
+    const sid = await createSession(USER_ID);
+    setSessionId(sid);
   };
 
   const handleSelectChat = async (sid) => {
@@ -133,7 +171,7 @@ Catatan Tambahan =`,
     try {
       const data = await getChatMessages(sid);
       setMessages(
-        data.map(m => ({
+        data.map((m) => ({
           id: m.id,
           text: m.content,
           isBot: m.sender === "bot",
@@ -144,40 +182,40 @@ Catatan Tambahan =`,
     }
   };
 
-  return (
-    <div className="flex flex-1 min-h-0 overflow-hidden">
+  const showWelcome = messages.length === 0;
 
-      {/* DESKTOP CHAT SIDEBAR */}
+  return (
+    <div
+      className="flex h-full overflow-hidden relative"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="hidden md:block">
         <ChatSidebar
           username={USER_NAME}
-          onNewChat={() => {
-            setSessionId(null);
-            setMessages([]);
-          }}
+          onNewChat={handleNewChat}
           onSelectChat={handleSelectChat}
           activeSessionId={sessionId}
         />
       </div>
 
-      {/* MOBILE CHAT SIDEBAR */}
-      {chatSidebarOpen && (
+      {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
             className="absolute inset-0 bg-black/40"
-            onClick={() => setChatSidebarOpen(false)}
+            onClick={() => setMobileSidebarOpen(false)}
           />
           <div className="relative w-64 h-full bg-white">
             <ChatSidebar
+              mobile
               username={USER_NAME}
               onNewChat={() => {
-                setSessionId(null);
-                setMessages([]);
-                setChatSidebarOpen(false);
+                handleNewChat();
+                setMobileSidebarOpen(false);
               }}
               onSelectChat={(sid) => {
                 handleSelectChat(sid);
-                setChatSidebarOpen(false);
+                setMobileSidebarOpen(false);
               }}
               activeSessionId={sessionId}
             />
@@ -185,36 +223,37 @@ Catatan Tambahan =`,
         </div>
       )}
 
-      {/* CHAT AREA */}
-      <div className="flex-1 flex flex-col min-h-0 bg-gray-50">
+      <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            {showWelcome && (
+              <ChatWelcome
+                userName={USER_NAME}
+                quickActions={quickActions}
+                setInput={setInput}
+              />
+            )}
 
-        {/* BODY */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
-          {messages.length === 0 && (
-            <ChatWelcome
-              userName={USER_NAME}
-              quickActions={quickActions}
+            {messages.length > 0 && (
+              <ChatMessages
+                messages={messages}
+                loading={loading}
+                bottomRef={bottomRef}
+              />
+            )}
+          </div>
+
+          <div className="border-t bg-white">
+            <ChatInput
+              input={input}
               setInput={setInput}
-              horizontalOnMobile
-            />
-          )}
-
-          {messages.length > 0 && (
-            <ChatMessages
-              messages={messages}
+              sendMessage={sendMessage}
               loading={loading}
-              bottomRef={bottomRef}
+              isFocused={isFocused}
+              setIsFocused={setIsFocused}
+              handleKeyPress={handleKeyPress}
             />
-          )}
-        </div>
-
-        {/* INPUT — STICKY NATURAL */}
-        <div className="border-t bg-white">
-          <ChatInput
-            input={input}
-            setInput={setInput}
-            sendMessage={sendMessage}
-          />
+          </div>
         </div>
       </div>
     </div>

@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Outlet } from "react-router-dom";
 import Sidebar from "./components/SideBar";
 import Navbar from "./components/Navbar";
-import { Outlet } from "react-router-dom";
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { pathname } = useLocation();
 
   const isChatbot = pathname.startsWith("/chatbot");
+  const isMobile = window.innerWidth < 768;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -31,11 +31,10 @@ export default function MainLayout() {
 
       <div className="flex-1 flex flex-col min-w-0">
 
-        {/* NAVBAR:
-            - MOBILE: selalu tampil
-            - DESKTOP: HILANG khusus chatbot */}
-        {(!isChatbot || window.innerWidth < 768) && (
-          <Navbar onMenuClick={() => setSidebarOpen(true)} />
+        {(!isChatbot || isMobile) && (
+          <Navbar
+            onMenuClick={() => setSidebarOpen(true)}
+          />
         )}
 
         <div className="flex-1 overflow-hidden">

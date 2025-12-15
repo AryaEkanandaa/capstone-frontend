@@ -38,7 +38,6 @@ export default function Chatbot() {
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
-
     try {
       const d = JSON.parse(atob(token.split(".")[1]));
       setUSER_NAME(toTitleCase(d.full_name));
@@ -99,7 +98,7 @@ Catatan Tambahan =`,
   const sendMessage = async (text) => {
     if (!text.trim()) return;
 
-    setMessages((p) => [...p, { id: Date.now(), text, isBot: false }]);
+    setMessages(p => [...p, { id: Date.now(), text, isBot: false }]);
     setInput("");
     setLoading(true);
 
@@ -116,10 +115,7 @@ Catatan Tambahan =`,
         userId: USER_ID,
       });
 
-      setMessages((p) => [
-        ...p,
-        { id: Date.now(), text: res.reply, isBot: true },
-      ]);
+      setMessages(p => [...p, { id: Date.now(), text: res.reply, isBot: true }]);
     } finally {
       setLoading(false);
     }
@@ -137,7 +133,7 @@ Catatan Tambahan =`,
     try {
       const data = await getChatMessages(sid);
       setMessages(
-        data.map((m) => ({
+        data.map(m => ({
           id: m.id,
           text: m.content,
           isBot: m.sender === "bot",
@@ -151,6 +147,7 @@ Catatan Tambahan =`,
   return (
     <div className="flex flex-1 min-h-0 overflow-hidden">
 
+      {/* DESKTOP CHAT SIDEBAR */}
       <div className="hidden md:block">
         <ChatSidebar
           username={USER_NAME}
@@ -163,6 +160,7 @@ Catatan Tambahan =`,
         />
       </div>
 
+      {/* MOBILE CHAT SIDEBAR */}
       {chatSidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
@@ -187,13 +185,17 @@ Catatan Tambahan =`,
         </div>
       )}
 
-      <div className="flex-1 flex flex-col bg-gray-50 min-h-0">
-        <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0">
+      {/* CHAT AREA */}
+      <div className="flex-1 flex flex-col min-h-0 bg-gray-50">
+
+        {/* BODY */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
           {messages.length === 0 && (
             <ChatWelcome
               userName={USER_NAME}
               quickActions={quickActions}
               setInput={setInput}
+              horizontalOnMobile
             />
           )}
 
@@ -206,6 +208,7 @@ Catatan Tambahan =`,
           )}
         </div>
 
+        {/* INPUT — STICKY NATURAL */}
         <div className="border-t bg-white">
           <ChatInput
             input={input}

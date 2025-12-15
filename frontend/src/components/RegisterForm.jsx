@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Logo from "./Logo"; 
+import Logo from "./Logo";
 
 export default function RegisterForm({
   form,
@@ -34,27 +34,38 @@ export default function RegisterForm({
         d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.978 10.978 0 0020 10c-.574-1.638-1.574-3.14-2.735-4.437l-1.125-1.125a1 1 0 00-1.414 0zM10 13a3 3 0 100-6 3 3 0 000 6z"
         clipRule="evenodd"
       />
-      <path d="M10 10a.5.5 0 000 1h.01a.5.5 0 000-1H10z" />
     </svg>
   );
 
   return (
-    <div className="z-10 bg-[#1e2336] p-10 rounded-xl shadow-2xl w-full max-w-md backdrop-filter backdrop-blur-sm border border-gray-700/50 text-white">
-      
+    <div
+      className="
+        z-10
+        bg-[#1e2336]
+        w-full max-w-md
+        px-6 py-8 sm:p-10
+        rounded-xl
+        shadow-2xl
+        backdrop-filter backdrop-blur-sm
+        border border-gray-700/50
+        text-white
+      "
+    >
       <Logo />
 
-      <h2 className="text-3xl font-bold text-center mb-2">
+      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">
         Daftar Akun Baru
       </h2>
 
       <p className="text-sm text-center text-gray-400 mb-6">
-        Selamat datang di Predictive Maintenance Copilot.<br />
+        Selamat datang di Predictive Maintenance Copilot.
+        <br />
         A25-CS044
       </p>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {error && (
-          <p className="text-red-400 text-center text-sm mb-2">
+          <p className="text-red-400 text-center text-sm">
             {error}
           </p>
         )}
@@ -68,7 +79,15 @@ export default function RegisterForm({
             id="full_name"
             name="full_name"
             placeholder="Masukkan nama lengkap"
-            className="px-4 py-3 bg-[#171b29] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="
+              px-4 py-2.5 sm:py-3
+              bg-[#171b29]
+              border border-gray-700
+              rounded-lg
+              text-sm sm:text-base
+              text-white placeholder-gray-500
+              focus:outline-none focus:ring-2 focus:ring-indigo-500
+            "
             value={form.full_name}
             onChange={handleChange}
             required
@@ -84,7 +103,15 @@ export default function RegisterForm({
             id="email"
             name="email"
             placeholder="Masukkan email"
-            className="px-4 py-3 bg-[#171b29] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="
+              px-4 py-2.5 sm:py-3
+              bg-[#171b29]
+              border border-gray-700
+              rounded-lg
+              text-sm sm:text-base
+              text-white placeholder-gray-500
+              focus:outline-none focus:ring-2 focus:ring-indigo-500
+            "
             value={form.email}
             onChange={handleChange}
             required
@@ -101,7 +128,15 @@ export default function RegisterForm({
               id="password"
               name="password"
               placeholder="Masukkan kata sandi"
-              className="px-4 py-3 pr-10 w-full bg-[#171b29] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="
+                px-4 py-2.5 sm:py-3 pr-10 w-full
+                bg-[#171b29]
+                border border-gray-700
+                rounded-lg
+                text-sm sm:text-base
+                text-white placeholder-gray-500
+                focus:outline-none focus:ring-2 focus:ring-indigo-500
+              "
               value={form.password}
               onChange={handleChange}
               required
@@ -118,12 +153,22 @@ export default function RegisterForm({
 
         <button
           type="submit"
-          className="mt-4 w-full py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold shadow-lg transition duration-200"
+          className="
+            mt-4
+            w-full
+            py-2.5 sm:py-3
+            bg-indigo-600 hover:bg-indigo-700
+            rounded-lg
+            text-sm sm:text-base
+            font-semibold
+            shadow-lg
+            transition
+          "
         >
           Daftar
         </button>
 
-        <p className="text-xs text-center text-gray-400 mt-4">
+        <p className="text-xs text-center text-gray-400 mt-4 leading-relaxed">
           Dengan mendaftar, Anda menyetujui Syarat, Kebijakan Privasi, dan
           Kebijakan Keamanan kami.
         </p>

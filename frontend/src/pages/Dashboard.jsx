@@ -35,14 +35,28 @@ export default function Dashboard() {
     async function init() {
       try {
         const [sRes, pRes, aRes] = await Promise.all([
-          fetch(`${API_BASE}/sensor/latest-all`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-          fetch(`${API_BASE}/predict/latest-by-machine`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-          fetch(`${API_BASE}/anomaly/latest`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()).catch(() => ({ data: [] })),
+          fetch(`${API_BASE}/sensor/latest-all`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }).then(r => r.json()),
+
+          fetch(`${API_BASE}/predict/latest-by-machine`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }).then(r => r.json()),
+
+          fetch(`${API_BASE}/anomaly/latest`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }).then(r => r.json()).catch(() => ({ data: [] })),
         ]);
 
         const sensorData = sRes.data || [];
-        const predData = (pRes.data || []).reduce((m, p) => { m[p.machine_id] = p; return m }, {});
-        const anomalyData = (aRes.data || []).reduce((m, a) => { m[a.machine_id] = a; return m }, {});
+        const predData = (pRes.data || []).reduce((m, p) => {
+          m[p.machine_id] = p;
+          return m;
+        }, {});
+        const anomalyData = (aRes.data || []).reduce((m, a) => {
+          m[a.machine_id] = a;
+          return m;
+        }, {});
 
         setMachines(prev =>
           prev.map(m => {
@@ -50,16 +64,23 @@ export default function Dashboard() {
             const p = predData[m.machine_id] || {};
             const a = anomalyData[m.machine_id] || {};
 
-            const timestamp = s.created_at || p.created_at || a.created_at || new Date().toISOString();
+            const timestamp =
+              s.created_at ||
+              p.created_at ||
+              a.created_at ||
+              new Date().toISOString();
 
-            const chart = [...m.chartPoints, {
-              x: new Date(timestamp).getTime(),
-              rpm: s.rotational_speed,
-              temp: s.air_temperature,
-              proc: s.process_temperature,
-              torque: s.torque,
-              wear: s.tool_wear
-            }].slice(-CHART_MAX_POINTS);
+            const chart = [
+              ...m.chartPoints,
+              {
+                x: new Date(timestamp).getTime(),
+                rpm: s.rotational_speed,
+                temp: s.air_temperature,
+                proc: s.process_temperature,
+                torque: s.torque,
+                wear: s.tool_wear
+              }
+            ].slice(-CHART_MAX_POINTS);
 
             return {
               ...m,
@@ -79,12 +100,15 @@ export default function Dashboard() {
           })
         );
 
-        sensorData.forEach(s => s?.machine_id && loadTrend(s.machine_id, "10m"));
+        sensorData.forEach(
+          s => s?.machine_id && loadTrend(s.machine_id, "10m")
+        );
 
       } catch (err) {
         console.log("INIT ERROR", err);
       }
     }
+
     init();
   }, [token]);
 
@@ -94,14 +118,18 @@ export default function Dashboard() {
         if (m.machine_id !== update.machine_id) return m;
 
         const t = update.created_at || new Date().toISOString();
-        const chart = [...m.chartPoints, {
-          x: new Date(t).getTime(),
-          rpm: update.rotational_speed,
-          temp: update.air_temperature,
-          proc: update.process_temperature,
-          torque: update.torque,
-          wear: update.tool_wear
-        }].slice(-CHART_MAX_POINTS);
+
+        const chart = [
+          ...m.chartPoints,
+          {
+            x: new Date(t).getTime(),
+            rpm: update.rotational_speed,
+            temp: update.air_temperature,
+            proc: update.process_temperature,
+            torque: update.torque,
+            wear: update.tool_wear
+          }
+        ].slice(-CHART_MAX_POINTS);
 
         return {
           ...m,
@@ -132,18 +160,17 @@ export default function Dashboard() {
     );
   }, []);
 
-
   const handleAnomalyUpdate = useCallback(update => {
     setMachines(prev =>
       prev.map(m =>
         m.machine_id !== update.machine_id
           ? m
           : {
-            ...m,
-            anomaly: update.is_anomaly ? 1 : 0,
-            anomaly_score: update.score,
-            anomaly_status: update.status
-          }
+              ...m,
+              anomaly: update.is_anomaly ? 1 : 0,
+              anomaly_score: update.score,
+              anomaly_status: update.status
+            }
       )
     );
   }, []);
@@ -159,9 +186,10 @@ export default function Dashboard() {
 
   async function loadTrend(machine_id, range = "30m") {
     try {
-      const res = await fetch(`${API_BASE}/sensor/${machine_id}/trend?range=${range}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch(
+        `${API_BASE}/sensor/${machine_id}/trend?range=${range}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       const d = await res.json();
       if (d.status !== "success") return;
 
@@ -170,57 +198,69 @@ export default function Dashboard() {
           m.machine_id !== machine_id
             ? m
             : {
-              ...m,
-              chartPoints: [
-                ...d.trend.map(p => ({
-                  x: new Date(p.created_at).getTime(),
-                  rpm: p.rotational_speed,
-                  temp: p.air_temperature,
-                  proc: p.process_temperature,
-                  torque: p.torque,
-                  wear: p.tool_wear
-                })),
-                ...m.chartPoints
-              ].slice(-CHART_MAX_POINTS)
-            }
+                ...m,
+                chartPoints: [
+                  ...d.trend.map(p => ({
+                    x: new Date(p.created_at).getTime(),
+                    rpm: p.rotational_speed,
+                    temp: p.air_temperature,
+                    proc: p.process_temperature,
+                    torque: p.torque,
+                    wear: p.tool_wear
+                  })),
+                  ...m.chartPoints
+                ].slice(-CHART_MAX_POINTS)
+              }
         )
       );
-    } catch { }
+    } catch {}
   }
 
+  /* ======================= RENDER ======================= */
+
   return (
-    <div className="p-2">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
 
       {(hasAnomaly || hasFailure) && (
         <div className="mb-10">
           <h2 className="text-xl font-bold mb-4">Peringatan Aktif</h2>
 
-          {/* Anomali */}
           {hasAnomaly && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {machines.filter(m => m.anomaly === 1).map(m => (
-                <div key={m.machine_id} className="p-4 border rounded-lg bg-orange-50 border-orange-400 shadow">
-                  <h3 className="font-bold text-lg text-orange-700">{m.name}</h3>
-                  <p className="text-sm font-semibold">Anomali terdeteksi</p>
-                  <p className="text-xs text-gray-700 mt-1">Nilai SCORE: {m.anomaly_score?.toFixed(3)}</p>
+                <div
+                  key={m.machine_id}
+                  className="p-4 border rounded-lg bg-orange-50 border-orange-400 shadow"
+                >
+                  <h3 className="font-bold text-lg text-orange-700">
+                    {m.name}
+                  </h3>
+                  <p className="text-sm font-semibold">
+                    Anomali terdeteksi
+                  </p>
+                  <p className="text-xs text-gray-700 mt-1">
+                    Nilai SCORE: {m.anomaly_score?.toFixed(3)}
+                  </p>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Failure Alerts */}
           {hasFailure && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {machines.filter(m => m.status !== "NORMAL").map(m => (
                 <div
                   key={m.machine_id}
-                  className={`p-4 rounded-lg shadow text-sm ${m.status === "CRITICAL"
+                  className={`p-4 rounded-lg shadow text-sm ${
+                    m.status === "CRITICAL"
                       ? "bg-red-50 border border-red-400"
                       : "bg-yellow-50 border border-yellow-400"
-                    }`}
+                  }`}
                 >
                   <h3 className="font-bold">{m.name}</h3>
-                  <p>{m.prediction} — {(m.probability * 100).toFixed(1)}%</p>
+                  <p>
+                    {m.prediction} — {(m.probability * 100).toFixed(1)}%
+                  </p>
                   <p>Status: {m.status}</p>
                 </div>
               ))}
@@ -229,16 +269,22 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ===================== 2. MACHINE LIST ===================== */}
+      {/* ===================== MACHINE LIST ===================== */}
       <h2 className="text-xl font-bold mb-6">Daftar Mesin</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        {machines.map(m => <MachineCard key={m.machine_id} {...m} />)}
+        {machines.map(m => (
+          <MachineCard key={m.machine_id} {...m} />
+        ))}
       </div>
 
-      {/* ===================== 3. LIVE TREND ===================== */}
-      <h2 className="text-xl font-bold mb-4">Tren Parameter Mesin (Realtime)</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
-        {machines.map(m => <MachineTrendChart key={m.machine_id} machine={m} />)}
+      {/* ===================== LIVE TREND ===================== */}
+      <h2 className="text-xl font-bold mb-4">
+        Tren Parameter Mesin (Realtime)
+      </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        {machines.map(m => (
+          <MachineTrendChart key={m.machine_id} machine={m} />
+        ))}
       </div>
 
     </div>
